@@ -3,17 +3,58 @@
 //  The docs for the `std::fmt` module are a good place to start and look for examples:
 //  https://doc.rust-lang.org/std/fmt/index.html#write
 
+use std::error::Error;
+use std::fmt::Debug;
+use std::fmt::Display;
+
 enum TicketNewError {
     TitleError(String),
     DescriptionError(String),
 }
+
+impl Debug for TicketNewError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TicketNewError::TitleError(msg) => write!(f, "Title error: {}", msg),
+            TicketNewError::DescriptionError(msg) => write!(f, "Description error: {}", msg),
+        }
+    }
+}
+
+impl Display for TicketNewError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TicketNewError::TitleError(msg) => write!(f, "{}", msg),
+            TicketNewError::DescriptionError(msg) => write!(f, "{}", msg),
+        }
+    }
+}
+
+impl Error for TicketNewError {}
 
 // TODO: `easy_ticket` should panic when the title is invalid, using the error message
 //   stored inside the relevant variant of the `TicketNewError` enum.
 //   When the description is invalid, instead, it should use a default description:
 //   "Description not provided".
 fn easy_ticket(title: String, description: String, status: Status) -> Ticket {
-    todo!()
+    if title.is_empty() {
+        panic!("Title cannot be empty");
+    }
+    if title.len() > 50 {
+        panic!("Title cannot be longer than 50 bytes");
+    }
+    if description.is_empty() || description.len() > 500 {
+        return Ticket {
+            title,
+            description: "Description not provided".to_string(),
+            status,
+        };
+    }
+    Ticket {
+        title,
+        description,
+        status,
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
