@@ -30,6 +30,19 @@ pub struct TicketDraft {
     pub description: TicketDescription,
 }
 
+impl From<TicketDraft> for Ticket {
+    fn from(draft: TicketDraft) -> Self {
+        Ticket {
+            id: TicketId(0), // Placeholder, will be set in `add_ticket`
+            title: draft.title,
+            description: draft.description,
+            status: Status::ToDo,
+        }
+    }
+}
+
+// impl Into<Ticket> for Ticket {}
+
 #[derive(Clone, Debug, Copy, PartialEq)]
 pub enum Status {
     ToDo,
@@ -44,8 +57,16 @@ impl TicketStore {
         }
     }
 
-    pub fn add_ticket(&mut self, ticket: Ticket) {
-        self.tickets.push(ticket);
+    pub fn add_ticket<T: Into<Ticket>>(&mut self, ticket: T) -> TicketId {
+        let tid: TicketId = TicketId(self.tickets.len() as u64 + 1);
+        let mut t: Ticket = ticket.into();
+        t.id = tid;
+        self.tickets.push(t);
+        tid
+    }
+
+    pub fn get(&self, id: TicketId) -> Option<&Ticket> {
+        self.tickets.iter().find(|ticket| ticket.id == id)
     }
 }
 
